@@ -1,0 +1,12 @@
+.{
+    .name = "zig-nanoarch",
+    .version = "0.0.0",
+    .minimum_zig_version = "0.14.0-dev.1651+ffd071f55",
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+        "LICENSE.BSD-3-Clause",
+        "README.md",
+    },
+}
