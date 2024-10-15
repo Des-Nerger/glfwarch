@@ -1,7 +1,7 @@
-const Globals = @import("Globals.zig");
 const c = @import("c.zig");
 const debug = std.debug;
 const fmt = std.fmt;
+const g = @import("globals.zig"); // -lobals
 const heap = std.heap;
 const mem = std.mem;
 const path = std.fs.path;
@@ -12,8 +12,6 @@ pub fn die(comptime format: []const u8, args: anytype) noreturn {
     debug.print(format ++ "\n", args);
     process.exit(c.EXIT_FAILURE);
 }
-
-var g = Globals{}; // -lobals
 
 pub fn main() !void {
     var gpa = heap.GeneralPurposeAllocator(.{}){};
@@ -45,13 +43,13 @@ pub fn main() !void {
         }
     }
 
-    try g.coreLoad(args[1]);
-    defer g.coreUnload();
+    try g.core.load(args[1]);
+    defer g.core.unload();
 
-    g.coreLoadGame(args[2]);
+    try g.core.loadGame(args[2]);
     defer {
-        g.audioDeinit();
-        g.videoDeinit();
+        g.audio.deinit();
+        g.video.deinit();
     }
 
     if (!mem.eql(u8, savestatel, "")) {
