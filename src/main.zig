@@ -2,6 +2,7 @@ const c = @import("c.zig");
 const debug = std.debug;
 const fmt = std.fmt;
 const g = @import("globals.zig"); // -lobals
+const gl = @import("gl");
 const heap = std.heap;
 const mem = std.mem;
 const path = std.fs.path;
@@ -14,6 +15,8 @@ pub fn die(comptime format: []const u8, args: anytype) noreturn {
 }
 
 pub fn main() !void {
+    g.initNamespace();
+
     var gpa = heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     g.allocator = gpa.allocator();
@@ -26,7 +29,7 @@ pub fn main() !void {
             .{path.basename(args[0])},
         );
 
-    if (c.glfwInit() == c.GLFW_FALSE)
+    if (c.GLFW_FALSE == c.glfwInit())
         die("Failed to initialize glfw", .{});
     defer c.glfwTerminate();
 
@@ -49,7 +52,7 @@ pub fn main() !void {
     try g.core.loadGame(args[2]);
     defer {
         g.audio.deinit();
-        g.video.deinit();
+        g.v.deinit();
     }
 
     if (!mem.eql(u8, savestatel, "")) {
@@ -57,7 +60,21 @@ pub fn main() !void {
         // TODO
     }
 
-    // :main_loop
+    while (c.GLFW_FALSE == c.glfwWindowShouldClose(g.v.window)) {
+        c.glfwPollEvents();
+
+        // Reset core on R key.
+        if (c.glfwGetKey(g.v.window, c.GLFW_KEY_R) == c.GLFW_PRESS)
+            g.retro.reset();
+
+        g.retro.run();
+
+        gl.Clear(gl.COLOR_BUFFER_BIT);
+
+        g.v.render();
+
+        c.glfwSwapBuffers(g.v.window);
+    }
 
     if (!mem.eql(u8, savestated, "")) {
         debug.print("savestated = {s}\n", .{savestated});

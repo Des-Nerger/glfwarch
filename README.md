@@ -1,2 +1,7 @@
-# zig-nanoarch
-A (WIP) Ziglang rewrite of [nanoarch](https://github.com/heuripedes/nanoarch). The audio (OpenAL) implementation part is (gonna be) borrowed from [ROMBundler](https://github.com/kivutar/rombundler).
+# glfwarch
+A (WIP) minimalistic Libretro frontend (being) written in Zig.
+
+# References
+[nanoarch](https://github.com/heuripedes/nanoarch)  
+[sdlarch](https://github.com/heuripedes/sdlarch)  
+[ROMBundler](https://github.com/kivutar/rombundler)  

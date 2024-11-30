@@ -5,13 +5,22 @@ const debug = std.debug;
 const die = @import("main.zig").die;
 const fs = std.fs;
 const g = @import("globals.zig"); // -lobals
+const io = std.io;
 const process = std.process;
 const std = @import("std");
-const stdout = std.io.getStdOut().writer();
+var stdout: fs.File.Writer = undefined;
 
 usingnamespace struct {
     pub var game_data: []u8 = &.{};
 };
+
+pub fn initNamespace() void {
+    const S = struct {
+        var stdout: fs.File = undefined;
+    }; // -taticLocal
+    S.stdout = io.getStdOut();
+    stdout = S.stdout.writer();
+}
 
 usingnamespace struct {
     pub fn maybeFreeGameData() void {
@@ -24,7 +33,7 @@ usingnamespace struct {
     }
 
     pub fn environment(cmd: c_uint, data: ?*anyopaque) callconv(.C) bool {
-        _, _ = .{ cmd, data };
+        _ = .{ cmd, data };
         return undefined;
     }
 };
@@ -42,7 +51,7 @@ pub fn load(dynlib_file: [:0]const u8) !void {
     }
     debug.print("g.retro.api_version() == {}\n", .{g.retro.api_version()});
     g.retro.set_environment(core.environment);
-    g.retro.set_video_refresh(g.video.refresh);
+    g.retro.set_video_refresh(g.v.refresh);
     g.retro.set_input_poll(g.input.poll);
     g.retro.set_input_state(g.input.state);
     g.retro.set_audio_sample(g.audio.sample);
@@ -75,7 +84,7 @@ pub fn loadGame(filename: [:0]const u8) !void {
 
     var av = c.retro_system_av_info{};
     g.retro.get_system_av_info(&av);
-    try g.video.configure(&av.geometry);
+    try g.v.configure(&av.geometry);
     try g.audio.init(av.timing.sample_rate);
 }
 

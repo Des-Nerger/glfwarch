@@ -1,6 +1,6 @@
 pub fn poll() callconv(.C) void {}
 
 pub fn state(port: c_uint, device: c_uint, index: c_uint, id: c_uint) callconv(.C) i16 {
-    _, _, _, _ = .{ port, device, index, id };
+    _ = .{ port, device, index, id };
     return undefined;
 }

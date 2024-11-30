@@ -4,10 +4,14 @@ const c = @import("c.zig");
 const mem = std.mem;
 const std = @import("std");
 
+pub fn initNamespace() void {
+    @field(core, @src().fn_name)();
+}
+
 pub const audio = @import("audio.zig");
 pub const core = @import("core.zig");
 pub const input = @import("input.zig");
-pub const video = @import("video.zig");
+pub const v = @import("video.zig"); // -ideo
 pub var scale: f32 = 3;
 pub var allocator: mem.Allocator = undefined;
 pub var retro: struct {

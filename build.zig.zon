@@ -1,12 +1,23 @@
 .{
-    .name = "zig-nanoarch",
-    .version = "0.0.1",
-    .minimum_zig_version = "0.14.0-dev",
+    .name = "glfwarch",
+    .version = "0.0.2",
+    .minimum_zig_version = "0.14.0",
     .paths = .{
         "build.zig",
         "build.zig.zon",
         "src",
         "LICENSE.BSD-3-Clause",
         "README.md",
+    },
+    .dependencies = .{
+        .glfw = .{
+            .url = "git+https://github.com/castholm/glfw#996e326b9fb2217933f06e6a46f7bd639852001b",
+            .hash = "12206dd27a7ef579db7c4b8949679a0952a4f87671e1b86d7394a9e1c0dedc2354d6",
+            .lazy = true,
+        },
+        .zigglgen = .{
+            .url = "git+https://github.com/castholm/zigglgen#701f41808086411f14d3bc2d87fc0b14bd09ceba",
+            .hash = "1220acff2285b51630055c7c062fb62a01b32272297b27e90cd6f85901c1b4d1c48d",
+        },
     },
 }
