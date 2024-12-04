@@ -13,10 +13,9 @@ pub fn build(b: *std.Build) void {
     exe.addIncludePath(b.path("include"));
     if (target.query.isNativeOs() and target.result.os.tag != .windows) {
         exe.linkSystemLibrary("glfw");
-        // exe.linkSystemLibrary("openal");
+        exe.linkSystemLibrary("openal");
     } else inline for (.{
         .{ .name = "glfw", .artifact = "glfw" },
-        // .{.name = "openal", .artifact = ""},
     }) |dep|
         exe.linkLibrary(b.lazyDependency(dep.name, .{
             .optimize = .ReleaseFast,

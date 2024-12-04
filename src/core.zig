@@ -5,36 +5,19 @@ const debug = std.debug;
 const die = @import("main.zig").die;
 const fs = std.fs;
 const g = @import("globals.zig"); // -lobals
-const io = std.io;
 const process = std.process;
 const std = @import("std");
-var stdout: fs.File.Writer = undefined;
 
 usingnamespace struct {
-    pub var game_data: []u8 = &.{};
-};
-
-pub fn initNamespace() void {
-    const S = struct {
-        var stdout: fs.File = undefined;
-    }; // -taticLocal
-    S.stdout = io.getStdOut();
-    stdout = S.stdout.writer();
-}
-
-usingnamespace struct {
+    usingnamespace struct {
+        pub var game_data: []u8 = &.{};
+    };
     pub fn maybeFreeGameData() void {
         const data = &core.game_data;
-        debug.print("{s}(): core.game_data.len was {}\n", .{ @src().fn_name, data.len });
         if (data.len != 0) {
             g.allocator.free(data.*);
             data.* = &.{};
         }
-    }
-
-    pub fn environment(cmd: c_uint, data: ?*anyopaque) callconv(.C) bool {
-        _ = .{ cmd, data };
-        return undefined;
     }
 };
 
@@ -49,16 +32,36 @@ pub fn load(dynlib_file: [:0]const u8) !void {
             ) orelse
                 return error.SymbolNotFound;
     }
-    debug.print("g.retro.api_version() == {}\n", .{g.retro.api_version()});
-    g.retro.set_environment(core.environment);
+    g.retro.set_environment(struct {
+        fn environment(cmd: c_uint, data: ?*anyopaque) callconv(.C) bool {
+            switch (cmd) {
+                // c.RETRO_ENVIRONMENT_GET_LOG_INTERFACE => {},
+                // c.RETRO_ENVIRONMENT_GET_CAN_DUPE => {},
+                c.RETRO_ENVIRONMENT_SET_PIXEL_FORMAT => {
+                    const fmt = @as(*c.retro_pixel_format, @alignCast(@ptrCast(data.?))).*;
+
+                    if (fmt > c.RETRO_PIXEL_FORMAT_RGB565)
+                        return false;
+
+                    g.v.setPixelFormat(fmt);
+                },
+                // c.RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY,
+                // c.RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY => {},
+                else => {
+                    return false;
+                },
+            }
+            return true;
+        }
+    }.environment);
     g.retro.set_video_refresh(g.v.refresh);
-    g.retro.set_input_poll(g.input.poll);
-    g.retro.set_input_state(g.input.state);
+    g.retro.set_input_poll(g.in.poll);
+    g.retro.set_input_state(g.in.state);
     g.retro.set_audio_sample(g.audio.sample);
     g.retro.set_audio_sample_batch(g.audio.sampleBatch);
     g.retro.init();
     g.retro.is_initialized = true;
-    try stdout.writeAll("Core loaded\n");
+    debug.print("Core loaded\n", .{});
 }
 
 pub fn loadGame(filename: [:0]const u8) !void {
@@ -89,10 +92,10 @@ pub fn loadGame(filename: [:0]const u8) !void {
 }
 
 pub fn unload() void {
+    defer g.retro.lib.close();
     defer core.maybeFreeGameData();
-    g.retro.lib.close();
     if (!g.retro.is_initialized)
         return;
-    // g.retro.deinit();
+    g.retro.deinit();
     g.retro.is_initialized = false;
 }

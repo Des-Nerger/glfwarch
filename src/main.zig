@@ -15,8 +15,6 @@ pub fn die(comptime format: []const u8, args: anytype) noreturn {
 }
 
 pub fn main() !void {
-    g.initNamespace();
-
     var gpa = heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     g.allocator = gpa.allocator();
@@ -38,7 +36,7 @@ pub fn main() !void {
         var opts = args[3..];
         while (opts.len > 0) : (opts = opts[1..]) {
             if (mem.eql(u8, opts[0], "-s"))
-                g.scale = @floatFromInt(try fmt.parseInt(i16, opts[1], 10))
+                g.scale = try fmt.parseInt(i16, opts[1], 10)
             else if (mem.eql(u8, opts[0], "-l"))
                 savestatel = opts[1]
             else if (mem.eql(u8, opts[0], "-d"))
@@ -60,11 +58,11 @@ pub fn main() !void {
         // TODO
     }
 
-    while (c.GLFW_FALSE == c.glfwWindowShouldClose(g.v.window)) {
+    while (c.GLFW_FALSE == c.glfwWindowShouldClose(g.v.win)) {
         c.glfwPollEvents();
 
         // Reset core on R key.
-        if (c.glfwGetKey(g.v.window, c.GLFW_KEY_R) == c.GLFW_PRESS)
+        if (c.glfwGetKey(g.v.win, c.GLFW_KEY_R) == c.GLFW_PRESS)
             g.retro.reset();
 
         g.retro.run();
@@ -73,7 +71,7 @@ pub fn main() !void {
 
         g.v.render();
 
-        c.glfwSwapBuffers(g.v.window);
+        c.glfwSwapBuffers(g.v.win);
     }
 
     if (!mem.eql(u8, savestated, "")) {
